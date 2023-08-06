@@ -20,6 +20,7 @@ const Login = () => {
 
     signIn(email, password)
       .then((result) => {
+        toast.success("Login Successful");
         navigate(from, { replace: true });
       })
       .catch((err) => {
@@ -31,6 +32,7 @@ const Login = () => {
   const handleGoogleSignIn = () => {
     signInWithGoogle()
       .then((result) => {
+        toast.success("Login Successful");
         navigate(from, { replace: true });
       })
       .catch((err) => {
