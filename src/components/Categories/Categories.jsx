@@ -1,5 +1,5 @@
 import React from "react";
-import Container from "../Container/Container";
+import Container from "../shared/Container/Container";
 import { categories } from "./categoriesData";
 import CategoryBox from "./CategoryBox";
 
