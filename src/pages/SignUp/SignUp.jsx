@@ -4,6 +4,7 @@ import { FcGoogle } from "react-icons/fc";
 import { AuthContext } from "../../providers/AuthProvider";
 import { TbFidgetSpinner } from "react-icons/tb";
 import { toast } from "react-hot-toast";
+import { saveUser } from "../../api/auth";
 
 const SignUp = () => {
   const {
@@ -41,6 +42,8 @@ const SignUp = () => {
         // Creating User
         createUser(email, password)
           .then((result) => {
+            // Save User to Database
+            saveUser(result.user);
             // Update User Profile
             updateUserProfile(name, imageUrl)
               .then((result) => {})
@@ -65,6 +68,8 @@ const SignUp = () => {
   const handleGoogleSignIn = () => {
     signInWithGoogle()
       .then((result) => {
+        // Save User To Database
+        saveUser(result.user);
         navigate(from, { replace: true });
         toast.success("Login Successful");
       })
