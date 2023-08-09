@@ -7,6 +7,7 @@ import RoomDetails from "../pages/RoomDetails/RoomDetails";
 import PrivateRoute from "./PrivateRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
 import AddRoom from "../pages/Dashboard/AddRoom";
+import { getARoom } from "../api/rooms";
 
 export const router = createBrowserRouter([
   {
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
             <RoomDetails />
           </PrivateRoute>
         ),
+        loader: ({ params }) => getARoom(params.id),
       },
     ],
   },
