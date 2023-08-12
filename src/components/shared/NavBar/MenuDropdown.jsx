@@ -1,22 +1,52 @@
 import { AiOutlineMenu } from "react-icons/ai";
-
+import Avatar from "./Avatar";
 import { useCallback, useContext, useState } from "react";
 import { AuthContext } from "../../../providers/AuthProvider";
 import { Link } from "react-router-dom";
-import Avatar from "./Avatar";
+import HostModal from "../../Modal/HostRequestModal";
+import { makeAUserHost } from "../../../api/auth";
+import { toast } from "react-hot-toast";
 
 const MenuDropdown = () => {
-  const { user, logOut } = useContext(AuthContext);
+  const { user, logOut, isUserHost } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
+  const [modal, setModal] = useState(false);
   const toggleOpen = useCallback(() => {
     setIsOpen((value) => !value);
   }, []);
 
+  console.log(isUserHost);
+
+  // Handle Modal
+  const modalHandler = (email) => {
+    makeAUserHost(email)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "fail") {
+          toast.error(data.message);
+        }
+        toast.success(data.status);
+      })
+      .catch((err) => {
+        toast.error(err.message);
+      });
+    setModal(false);
+  };
+
+  // Close Modal
+  const closeModal = () => {
+    setModal(false);
+  };
   return (
     <div className="relative">
       <div className="flex flex-row items-center gap-3">
-        <div className="hidden md:block text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer">
-          AirCNC your home
+        <div
+          onClick={() => {
+            setModal(true);
+          }}
+          className="hidden md:block text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
+        >
+          AirCNC your home 123
         </div>
         <div
           onClick={toggleOpen}
@@ -71,6 +101,12 @@ const MenuDropdown = () => {
           </div>
         </div>
       )}
+      <HostModal
+        closeModal={closeModal}
+        email={user?.email}
+        modalHandler={modalHandler}
+        isOpen={modal}
+      />
     </div>
   );
 };

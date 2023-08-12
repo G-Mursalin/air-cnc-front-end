@@ -11,6 +11,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { app } from "../firebase/firebase.config";
+import { isHost } from "../api/auth";
 
 export const AuthContext = createContext(null);
 
@@ -19,7 +20,17 @@ const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isUserHost, setIsUserHost] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      isHost(user.email).then((data) => {
+        console.log(data);
+        setIsUserHost(data);
+      });
+    }
+  }, [user]);
 
   const createUser = (email, password) => {
     setLoading(true);
@@ -73,6 +84,8 @@ const AuthProvider = ({ children }) => {
     resetPassword,
     logOut,
     updateUserProfile,
+    isUserHost,
+    setIsUserHost,
   };
 
   return (
