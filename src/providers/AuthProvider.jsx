@@ -26,7 +26,6 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       isHost(user.email).then((data) => {
-        console.log(data);
         setIsUserHost(data);
       });
     }

@@ -8,14 +8,12 @@ import { makeAUserHost } from "../../../api/auth";
 import { toast } from "react-hot-toast";
 
 const MenuDropdown = () => {
-  const { user, logOut, isUserHost } = useContext(AuthContext);
+  const { user, logOut, isUserHost, setIsUserHost } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
   const [modal, setModal] = useState(false);
   const toggleOpen = useCallback(() => {
     setIsOpen((value) => !value);
   }, []);
-
-  console.log(isUserHost);
 
   // Handle Modal
   const modalHandler = (email) => {
@@ -24,8 +22,10 @@ const MenuDropdown = () => {
       .then((data) => {
         if (data.status === "fail") {
           toast.error(data.message);
+        } else {
+          toast.success(data.status);
+          setIsUserHost("host");
         }
-        toast.success(data.status);
       })
       .catch((err) => {
         toast.error(err.message);
@@ -40,14 +40,20 @@ const MenuDropdown = () => {
   return (
     <div className="relative">
       <div className="flex flex-row items-center gap-3">
-        <div
-          onClick={() => {
-            setModal(true);
-          }}
-          className="hidden md:block text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
-        >
-          AirCNC your home 123
+        <div className="hidden md:block text-sm font-semibold py-3 px-8 rounded-full  transition cursor-pointer">
+          {!isUserHost && (
+            <button
+              onClick={() => {
+                setModal(true);
+              }}
+              className="hover:bg-neutral-100 cursor-pointer py-3 px-4"
+              disabled={!user}
+            >
+              AirCNC your home 123
+            </button>
+          )}
         </div>
+
         <div
           onClick={toggleOpen}
           className="p-4 md:py-1 md:px-2 border-[1px] border-neutral-200 flex flex-row items-center gap-3 rounded-full cursor-pointer hover:shadow-md transition"
@@ -76,7 +82,10 @@ const MenuDropdown = () => {
                   Dashboard
                 </Link>
                 <div
-                  onClick={logOut}
+                  onClick={() => {
+                    logOut();
+                    setIsUserHost(null);
+                  }}
                   className="px-4 py-3 hover:bg-neutral-100 transition font-semibold cursor-pointer"
                 >
                   Logout
