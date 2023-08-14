@@ -4,10 +4,12 @@ import { imageUpload } from "../../api/utils";
 import { AuthContext } from "../../providers/AuthProvider";
 import { saveRoom } from "../../api/rooms";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const AddRoom = () => {
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [uploadButtonText, setUploadButtonText] = useState("Upload Image");
   const [dates, setDates] = useState({
     startDate: new Date(),
@@ -60,6 +62,7 @@ const AddRoom = () => {
             toast.success(data.status);
             setLoading(false);
             setUploadButtonText("Uploaded!");
+            navigate("/dashboard/my-listings");
           })
           .catch((err) => {
             toast.error(err.message);
@@ -70,6 +73,8 @@ const AddRoom = () => {
         toast.error(err.message);
         setLoading(false);
       });
+
+    event.target.reset();
   };
 
   const handleImageChange = (img) => {

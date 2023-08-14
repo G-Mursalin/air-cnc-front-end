@@ -13,12 +13,15 @@ export const saveRoom = async (roomData) => {
 };
 
 // Get All Rooms from Database
-export const getAllRoom = async () => {
-  const response = await fetch("http://localhost:5000/api/v1/rooms", {
-    headers: {
-      "content-type": "application/json",
-    },
-  });
+export const getAllRoom = async (email = "") => {
+  const response = await fetch(
+    `http://localhost:5000/api/v1/rooms?email=${email}`,
+    {
+      headers: {
+        "content-type": "application/json",
+      },
+    }
+  );
 
   const data = await response.json();
   return data;
@@ -48,6 +51,19 @@ export const updateRoomBookedStatus = async (id, status) => {
       body: JSON.stringify({ status }),
     }
   );
+
+  const data = await response.json();
+  return data;
+};
+
+// Delete Room Information
+export const deleteRoom = async (id) => {
+  const response = await fetch(`http://localhost:5000/api/v1/rooms/${id}`, {
+    method: "DELETE",
+    headers: {
+      "content-type": "application/json",
+    },
+  });
 
   const data = await response.json();
   return data;

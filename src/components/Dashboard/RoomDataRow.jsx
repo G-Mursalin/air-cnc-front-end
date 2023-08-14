@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 
-const TableRow = ({ booking, setSelectedData, openModal }) => {
+const RoomDataRow = ({ room, setSelectedData, openModal }) => {
   return (
     <tr>
       <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -9,30 +9,35 @@ const TableRow = ({ booking, setSelectedData, openModal }) => {
             <div className="block relative">
               <img
                 alt="profile"
-                src={booking?.image}
+                src={room?.image}
                 className="mx-auto object-cover rounded h-10 w-15 "
               />
             </div>
           </div>
           <div className="ml-3">
-            <p className="text-gray-900 whitespace-no-wrap">{booking?.title}</p>
+            <p className="text-gray-900 whitespace-no-wrap">{room?.title}</p>
           </div>
         </div>
       </td>
       <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-        <p className="text-gray-900 whitespace-no-wrap">{booking?.location}</p>
+        <p className="text-gray-900 whitespace-no-wrap">{room?.location}</p>
       </td>
       <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-        <p className="text-gray-900 whitespace-no-wrap">${booking?.price}</p>
+        <p className="text-gray-900 whitespace-no-wrap">${room?.price}</p>
       </td>
       <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
         <p className="text-gray-900 whitespace-no-wrap">
-          {format(new Date(booking?.from), "P")}
+          {format(new Date(room?.from), "P")}
         </p>
       </td>
       <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
         <p className="text-gray-900 whitespace-no-wrap">
-          {format(new Date(booking?.to), "P")}
+          {format(new Date(room?.to), "P")}
+        </p>
+      </td>
+      <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+        <p className="text-gray-900 whitespace-no-wrap">
+          {room?.booked ? "Yes" : "No"}
         </p>
       </td>
       <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -43,12 +48,29 @@ const TableRow = ({ booking, setSelectedData, openModal }) => {
           ></span>
           <span
             onClick={() => {
-              setSelectedData(booking);
+              setSelectedData(room);
               openModal();
             }}
             className="relative"
           >
-            Cancel
+            Delete
+          </span>
+        </span>
+      </td>
+      <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+        <span className="relative cursor-pointer inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 bg-green-200 opacity-50 rounded-full"
+          ></span>
+          <span
+            onClick={() => {
+              setSelectedData(room);
+              openModal();
+            }}
+            className="relative"
+          >
+            Update
           </span>
         </span>
       </td>
@@ -56,4 +78,4 @@ const TableRow = ({ booking, setSelectedData, openModal }) => {
   );
 };
 
-export default TableRow;
+export default RoomDataRow;

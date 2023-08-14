@@ -22,7 +22,7 @@ export const getBookings = async (email) => {
   return data;
 };
 
-// Send Booking Information to Database
+// Delete Booking Information
 export const deleteBooking = async (id) => {
   const response = await fetch(`http://localhost:5000/api/v1/bookings/${id}`, {
     method: "DELETE",
