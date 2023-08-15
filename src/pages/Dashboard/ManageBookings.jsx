@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { deleteBooking, getBookingsForGuest } from "../../api/bookings";
+import { deleteBooking, getBookingsForHost } from "../../api/bookings";
 import { AuthContext } from "../../providers/AuthProvider";
 import { toast } from "react-hot-toast";
 import TableRow from "../../components/Dashboard/TableRow";
 import DeleteModal from "../../components/Modal/DeleteModal";
 import { updateRoomBookedStatus } from "../../api/rooms";
 
-const MyBookings = () => {
+const ManageBookings = () => {
   const [bookings, setBookings] = useState([]);
   const { user } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
@@ -34,7 +34,6 @@ const MyBookings = () => {
       .catch((err) => {
         toast.error(err.message);
       });
-
     // Closed the modal
     closeModal();
   };
@@ -51,7 +50,7 @@ const MyBookings = () => {
 
   // Fetch Bookings Data From Database
   useEffect(() => {
-    getBookingsForGuest(user.email)
+    getBookingsForHost(user.email)
       .then((data) => {
         if (data.status === "fail") {
           toast.error(data.message);
@@ -137,4 +136,4 @@ const MyBookings = () => {
   );
 };
 
-export default MyBookings;
+export default ManageBookings;
