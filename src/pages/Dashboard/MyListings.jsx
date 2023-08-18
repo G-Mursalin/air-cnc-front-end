@@ -1,29 +1,72 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../../providers/AuthProvider";
-import { deleteRoom, getAllRoom } from "../../api/rooms";
 import { toast } from "react-hot-toast";
 import RoomDataRow from "../../components/Dashboard/RoomDataRow";
 import DeleteModal from "../../components/Modal/DeleteModal";
+import NoDataFound from "../../components/shared/NavBar/NoDataFound";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { useQuery } from "@tanstack/react-query";
+import Loader from "../../components/shared/Loader/Loader";
 
 const MyListings = () => {
-  const [listings, setListings] = useState([]);
   const { user } = useContext(AuthContext);
-  const [refetchListings, setRefetchListings] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [error, setError] = useState(null);
   const [selectedData, setSelectedData] = useState(null);
+  const [axiosSecure] = useAxiosSecure();
 
-  const deleteModalHandler = () => {
-    deleteRoom(selectedData._id)
-      .then((data) => {
+  const {
+    data: listings = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["my-listings", user?.email],
+    queryFn: async () => {
+      try {
+        const data = await axiosSecure.get(
+          `/rooms/my-listings?email=${user.email}`
+        );
+
+        return data.data.data.rooms;
+      } catch (error) {
+        const { data } = error.response;
         if (data.status === "fail") {
           toast.error(data.message);
+          setError({ errorMessage: data.message });
+          return [];
+        } else if (data.status === "error") {
+          toast.error(data.message);
+          setError({ errorMessage: data.message });
+          return [];
         } else {
-          toast.success(data.status);
-          setRefetchListings((pre) => !pre);
+          toast.error(error.message);
+          setError({ errorMessage: error.message });
+          return [];
         }
+      }
+    },
+  });
+
+  if (isLoading) return <Loader />;
+
+  const deleteModalHandler = () => {
+    // Delete Room
+    axiosSecure
+      .delete(`/rooms/${selectedData._id}`)
+      .then((data) => {
+        toast.success(data.data.message);
+        refetch();
       })
       .catch((err) => {
-        toast.error(err.message);
+        // Catch Errors for Delete Room
+        const errorData = err.response.data;
+        if (errorData.status === "fail") {
+          toast.error(errorData.message);
+        } else if (errorData.status === "error") {
+          toast.error(errorData.message);
+        } else {
+          toast.error(err.message);
+        }
       });
 
     // Closed The Model
@@ -40,21 +83,27 @@ const MyListings = () => {
     setIsOpen(true);
   };
 
-  // Fetch Bookings Data From Database
-  useEffect(() => {
-    getAllRoom(user.email)
-      .then((data) => {
-        if (data.status === "fail") {
-          toast.error(data.message);
-        } else {
-          toast.success(data.status);
-          setListings(data.data.rooms);
-        }
-      })
-      .catch((err) => {
-        toast.error(err.message);
-      });
-  }, [user, refetchListings]);
+  // If Any Error Show It To UI
+  if (error) {
+    return (
+      <NoDataFound
+        message={error.errorMessage}
+        address="/"
+        label="Go To Home"
+      />
+    );
+  }
+
+  // If no data found then show the user message
+  if (!listings || !Array.isArray(listings) || listings.length === 0) {
+    return (
+      <NoDataFound
+        message="No Room Data Available!"
+        address="/dashboard/add-room"
+        label="Add Room"
+      />
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 sm:px-8">

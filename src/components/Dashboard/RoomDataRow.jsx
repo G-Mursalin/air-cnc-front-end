@@ -9,6 +9,7 @@ const RoomDataRow = ({ room, setSelectedData, openModal }) => {
             <div className="block relative">
               <img
                 alt="profile"
+                referrerPolicy="no-referrer"
                 src={room?.image}
                 className="mx-auto object-cover rounded h-10 w-15 "
               />

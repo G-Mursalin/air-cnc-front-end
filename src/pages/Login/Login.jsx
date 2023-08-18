@@ -1,14 +1,13 @@
 import React, { useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FcGoogle } from "react-icons/fc";
 import { AuthContext } from "../../providers/AuthProvider";
 import { toast } from "react-hot-toast";
 import { TbFidgetSpinner } from "react-icons/tb";
-import { saveUser } from "../../api/auth";
+import axios from "axios";
+import GoogleAuth from "../../components/shared/SocialAuth/GoogleAuth";
 
 const Login = () => {
-  const { loading, setLoading, signInWithGoogle, signIn, resetPassword } =
-    useContext(AuthContext);
+  const { loading, setLoading, signIn } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || "/";
@@ -22,21 +21,29 @@ const Login = () => {
     signIn(email, password)
       .then((result) => {
         toast.success("Login Successful");
-        navigate(from, { replace: true });
-      })
-      .catch((err) => {
-        setLoading(false);
-        toast.error(err.message);
-      });
-  };
-  // Login With Google
-  const handleGoogleSignIn = () => {
-    signInWithGoogle()
-      .then((result) => {
-        // Save user to database
-        saveUser(result.user);
-        toast.success("Login Successful");
-        navigate(from, { replace: true });
+        // Get JWT Token
+        axios
+          .post("http://localhost:5000/api/v1/users/jwt", {
+            email: result.user.email,
+          })
+          .then((data) => {
+            console.log(data.data.accessToken);
+            localStorage.setItem("access-token", data.data.accessToken);
+            navigate(from, { replace: true });
+          })
+          .catch((err) => {
+            // Catch Errors for Get JWT Token
+            const errorData = err.response.data;
+            if (errorData.status === "fail") {
+              toast.error(errorData.message);
+            } else if (errorData.status === "error") {
+              toast.error(errorData.message);
+            } else {
+              toast.error(err.message);
+            }
+            setLoading(false);
+            navigate("/");
+          });
       })
       .catch((err) => {
         setLoading(false);
@@ -116,13 +123,7 @@ const Login = () => {
           </p>
           <div className="flex-1 h-px sm:w-16 dark:bg-gray-700"></div>
         </div>
-        <div
-          onClick={handleGoogleSignIn}
-          className="flex justify-center items-center space-x-2 border m-3 p-2 border-gray-300 border-rounded cursor-pointer"
-        >
-          <FcGoogle size={32} />
-          <p>Continue with Google</p>
-        </div>
+        <GoogleAuth />
         <p className="px-6 text-sm text-center text-gray-400">
           Don't have an account yet?{" "}
           <Link

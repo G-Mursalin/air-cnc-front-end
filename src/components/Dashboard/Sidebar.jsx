@@ -5,9 +5,9 @@ import Logo from "../Shared/Navbar/Logo";
 import { GrLogout } from "react-icons/gr";
 import { FcSettings } from "react-icons/fc";
 import { AiOutlineBars } from "react-icons/ai";
-import { BsFillHouseAddFill } from "react-icons/bs";
 import GuestMenu from "./GuestMenu";
 import HostMenu from "./HostMenu";
+
 const Sidebar = () => {
   const navigate = useNavigate();
   const [toggle, setToggle] = useState(false);
@@ -57,9 +57,9 @@ const Sidebar = () => {
               <Link to="/dashboard">
                 <img
                   className="object-cover w-24 h-24 mx-2 rounded-full"
+                  referrerPolicy="no-referrer"
                   src={user?.photoURL}
                   alt="avatar"
-                  referrerPolicy="no-referrer"
                 />
               </Link>
               <Link to="/dashboard">

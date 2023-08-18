@@ -24,6 +24,7 @@ const Card = ({ room }) => {
               group-hover:scale-110 
               transition
             "
+            referrerPolicy="no-referrer"
             src={image}
             alt="Room"
           />

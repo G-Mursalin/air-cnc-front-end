@@ -19,6 +19,7 @@ const RoomInfo = ({ roomData }) => {
             height="30"
             width="30"
             alt="Avatar"
+            referrerPolicy="no-referrer"
             src={roomData.host.image}
           />
         </div>

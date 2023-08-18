@@ -4,13 +4,13 @@ import Button from "../Button/Button";
 import { AuthContext } from "../../providers/AuthProvider";
 import BookingModal from "../Modal/BookingModal";
 import { formatDistance } from "date-fns";
-import { saveBooking } from "../../api/bookings";
 import { toast } from "react-hot-toast";
-import { updateRoomBookedStatus } from "../../api/rooms";
 import { useNavigate } from "react-router-dom";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const RoomReservation = ({ roomData }) => {
   const { user, isUserHost } = useContext(AuthContext);
+  const [axiosSecure] = useAxiosSecure();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const [value, setValue] = useState({
@@ -49,26 +49,40 @@ const RoomReservation = ({ roomData }) => {
   // Modal Handler
   const modalHandler = () => {
     // Send Booking Information to Database
-    saveBooking(bookingInfo)
+    axiosSecure
+      .post("/bookings", bookingInfo)
       .then((data) => {
-        if (data.status === "fail") {
-          toast.error(data.message);
-        } else {
-          toast.success(data.status);
-          // Update the Room Booked Status
-          updateRoomBookedStatus(roomData._id, true).then((data) => {
-            if (data.status === "fail") {
-              toast.error(data.message);
+        toast.success(data.data.message);
+
+        // Update the Room Booked Status
+        axiosSecure
+          .patch(`/rooms/status/${roomData._id}`, { status: true })
+          .then((data) => {
+            toast.success(data.data.message);
+            navigate("/dashboard/my-bookings");
+          })
+          .catch((err) => {
+            // Catch Errors for Update the Room Booked Status
+            const errorData = err.response.data;
+            if (errorData.status === "fail") {
+              toast.error(errorData.message);
+            } else if (errorData.status === "error") {
+              toast.error(errorData.message);
             } else {
-              toast.success(data.status);
-              // Navigate user to his or her dashboard booking page
-              navigate("/dashboard/my-bookings");
+              toast.error(err.message);
             }
           });
-        }
       })
       .catch((err) => {
-        toast.error(err.message);
+        // Catch Errors for Send Booking Information to Database
+        const errorData = err.response.data;
+        if (errorData.status === "fail") {
+          toast.error(errorData.message);
+        } else if (errorData.status === "error") {
+          toast.error(errorData.message);
+        } else {
+          toast.error(err.message);
+        }
       });
 
     // Close The Model

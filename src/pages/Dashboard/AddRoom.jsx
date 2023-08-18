@@ -2,13 +2,14 @@ import React, { useContext, useState } from "react";
 import AddRoomForm from "../../components/Forms/AddRoomForm";
 import { imageUpload } from "../../api/utils";
 import { AuthContext } from "../../providers/AuthProvider";
-import { saveRoom } from "../../api/rooms";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const AddRoom = () => {
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
+  const [axiosSecure] = useAxiosSecure();
   const navigate = useNavigate();
   const [uploadButtonText, setUploadButtonText] = useState("Upload Image");
   const [dates, setDates] = useState({
@@ -57,15 +58,23 @@ const AddRoom = () => {
         };
 
         // Post Room Data to Database
-        saveRoom(roomData)
+        axiosSecure
+          .post("/rooms", roomData)
           .then((data) => {
-            toast.success(data.status);
+            toast.success(data.data.message);
             setLoading(false);
             setUploadButtonText("Uploaded!");
             navigate("/dashboard/my-listings");
           })
-          .catch((err) => {
-            toast.error(err.message);
+          .catch((error) => {
+            const errorData = error.response.data;
+            if (errorData.status === "fail") {
+              toast.error(errorData.message);
+            } else if (errorData.status === "error") {
+              toast.error(errorData.message);
+            } else {
+              toast.error(err.message);
+            }
             setLoading(false);
           });
       })

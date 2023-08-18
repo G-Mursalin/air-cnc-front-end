@@ -1,34 +1,41 @@
 import { AiOutlineMenu } from "react-icons/ai";
 import Avatar from "./Avatar";
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../../providers/AuthProvider";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import HostModal from "../../Modal/HostRequestModal";
-import { makeAUserHost } from "../../../api/auth";
 import { toast } from "react-hot-toast";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const MenuDropdown = () => {
   const { user, logOut, isUserHost, setIsUserHost } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
+  const [axiosSecure] = useAxiosSecure();
   const [modal, setModal] = useState(false);
+  const navigate = useNavigate();
   const toggleOpen = useCallback(() => {
     setIsOpen((value) => !value);
   }, []);
 
   // Handle Modal
   const modalHandler = (email) => {
-    makeAUserHost(email)
-      .then((res) => res.json())
+    axiosSecure
+      .patch(`/users/${email}`)
       .then((data) => {
-        if (data.status === "fail") {
-          toast.error(data.message);
-        } else {
-          toast.success(data.status);
-          setIsUserHost("host");
-        }
+        toast.success(data.data.status);
+        setIsUserHost(data.data.status);
+        navigate("/dashboard/add-room");
       })
       .catch((err) => {
-        toast.error(err.message);
+        // Catch Errors for Save user to database
+        const errorData = err.response.data;
+        if (errorData.status === "fail") {
+          toast.error(errorData.message);
+        } else if (errorData.status === "error") {
+          toast.error(errorData.message);
+        } else {
+          toast.error(err.message);
+        }
       });
     setModal(false);
   };
@@ -37,16 +44,17 @@ const MenuDropdown = () => {
   const closeModal = () => {
     setModal(false);
   };
+
   return (
     <div className="relative">
       <div className="flex flex-row items-center gap-3">
-        <div className="hidden md:block text-sm font-semibold py-3 px-8 rounded-full  transition cursor-pointer">
+        <div className="hidden md:block cursor-pointer">
           {!isUserHost && (
             <button
               onClick={() => {
                 setModal(true);
               }}
-              className="hover:bg-neutral-100 cursor-pointer py-3 px-4"
+              className="text-sm font-semibold rounded-full transition hover:bg-neutral-100 cursor-pointer py-3 px-4"
               disabled={!user}
             >
               AirCNC your home 123
@@ -65,7 +73,7 @@ const MenuDropdown = () => {
         </div>
       </div>
       {isOpen && (
-        <div className="absolute rounded-xl shadow-md w-[40vw] md:w-3/4 bg-white overflow-hidden right-0 top-12 text-sm">
+        <div className="absolute rounded-xl shadow-md w-[40vw] md:w-[10vw] bg-white overflow-hidden right-0 top-12 text-sm">
           <div className="flex flex-col cursor-pointer">
             <Link
               to="/"
@@ -84,7 +92,7 @@ const MenuDropdown = () => {
                 <div
                   onClick={() => {
                     logOut();
-                    setIsUserHost(null);
+                    setIsUserHost(false);
                   }}
                   className="px-4 py-3 hover:bg-neutral-100 transition font-semibold cursor-pointer"
                 >

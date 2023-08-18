@@ -1,38 +1,89 @@
 import { useContext, useEffect, useState } from "react";
-import { deleteBooking, getBookingsForHost } from "../../api/bookings";
 import { AuthContext } from "../../providers/AuthProvider";
 import { toast } from "react-hot-toast";
 import TableRow from "../../components/Dashboard/TableRow";
 import DeleteModal from "../../components/Modal/DeleteModal";
-import { updateRoomBookedStatus } from "../../api/rooms";
+import NoDataFound from "../../components/shared/NavBar/NoDataFound";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import Loader from "../../components/shared/Loader/Loader";
+import { useQuery } from "@tanstack/react-query";
 
 const ManageBookings = () => {
-  const [bookings, setBookings] = useState([]);
   const { user } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
-  const [refetchBookings, setRefetchBookings] = useState(false);
+  const [error, setError] = useState(null);
+  const [axiosSecure] = useAxiosSecure();
   const [selectedData, setSelectedData] = useState(null);
 
+  const {
+    data: bookings = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["manage-bookings", user?.email],
+    queryFn: async () => {
+      try {
+        const data = await axiosSecure.get(
+          `/bookings/host?email=${user.email}`
+        );
+
+        return data.data.data.bookings;
+      } catch (error) {
+        const { data } = error.response;
+        if (data.status === "fail") {
+          toast.error(data.message);
+          setError({ errorMessage: data.message });
+          return [];
+        } else if (data.status === "error") {
+          toast.error(data.message);
+          setError({ errorMessage: data.message });
+          return [];
+        } else {
+          toast.error(error.message);
+          setError({ errorMessage: error.message });
+          return [];
+        }
+      }
+    },
+  });
+
+  if (isLoading) return <Loader />;
   // Handle Modal
   const modalHandler = () => {
     // Delete the selected booking information from database
-    deleteBooking(selectedData._id)
+    axiosSecure
+      .delete(`/bookings/${selectedData._id}`)
       .then((data) => {
-        if (data.status === "fail") {
-          toast.error(data.message);
-        } else {
-          toast.success(data.status);
-          setRefetchBookings((pre) => !pre);
-          // Update deleted booking room booked status
-          updateRoomBookedStatus(selectedData.roomId, false).then((data) => {
-            if (data.status === "fail") {
-              toast.error(data.message);
+        toast.success(data.data.message);
+        refetch();
+        // Update deleted booking room booked status
+        axiosSecure
+          .patch(`/rooms/status/${selectedData.roomId}`, { status: false })
+          .then((data) => {
+            toast.success(data.data.message);
+          })
+          .catch((err) => {
+            // Catch Errors for Update the Room Booked Status
+            const errorData = err.response.data;
+            if (errorData.status === "fail") {
+              toast.error(errorData.message);
+            } else if (errorData.status === "error") {
+              toast.error(errorData.message);
+            } else {
+              toast.error(err.message);
             }
           });
-        }
       })
       .catch((err) => {
-        toast.error(err.message);
+        // Catch Errors for Delete the selected booking information from database
+        const errorData = err.response.data;
+        if (errorData.status === "fail") {
+          toast.error(errorData.message);
+        } else if (errorData.status === "error") {
+          toast.error(errorData.message);
+        } else {
+          toast.error(err.message);
+        }
       });
     // Closed the modal
     closeModal();
@@ -48,21 +99,26 @@ const ManageBookings = () => {
     setIsOpen(true);
   };
 
-  // Fetch Bookings Data From Database
-  useEffect(() => {
-    getBookingsForHost(user.email)
-      .then((data) => {
-        if (data.status === "fail") {
-          toast.error(data.message);
-        } else {
-          toast.success(data.status);
-          setBookings(data.data.bookings);
-        }
-      })
-      .catch((err) => {
-        toast.error(err.message);
-      });
-  }, [user, refetchBookings]);
+  // If Any Error Show It To UI
+  if (error) {
+    return (
+      <NoDataFound
+        message={error.errorMessage}
+        address="/"
+        label="Go To Home"
+      />
+    );
+  }
+  // If no data found then show the user message
+  if (!bookings || !Array.isArray(bookings) || bookings.length === 0) {
+    return (
+      <NoDataFound
+        message="No Booking Data Available!"
+        address="/"
+        label="Go Back"
+      />
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 sm:px-8">

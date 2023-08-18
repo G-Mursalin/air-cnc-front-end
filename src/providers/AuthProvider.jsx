@@ -11,8 +11,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { app } from "../firebase/firebase.config";
-import { isHost } from "../api/auth";
-
+import axios from "axios";
 export const AuthContext = createContext(null);
 
 const auth = getAuth(app);
@@ -20,14 +19,28 @@ const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isUserHost, setIsUserHost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isUserHost, setIsUserHost] = useState(false);
 
   useEffect(() => {
     if (user) {
-      isHost(user.email).then((data) => {
-        setIsUserHost(data);
-      });
+      axios
+        .get(`http://localhost:5000/api/v1/users/host/${user.email}`)
+        .then((data) => {
+          setIsUserHost(data.data.isHost);
+        })
+        .catch((err) => {
+          // Catch Errors for isHost Api
+          const errorData = err.response.data;
+          if (errorData.status === "fail") {
+            toast.error(errorData.message);
+          } else if (errorData.status === "error") {
+            toast.error(errorData.message);
+          } else {
+            toast.error(err.message);
+          }
+          setIsUserHost(false);
+        });
     }
   }, [user]);
 
@@ -53,6 +66,7 @@ const AuthProvider = ({ children }) => {
 
   const logOut = () => {
     setLoading(true);
+    localStorage.removeItem("access-token");
     return signOut(auth);
   };
 

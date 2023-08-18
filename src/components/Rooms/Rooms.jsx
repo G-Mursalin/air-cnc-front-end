@@ -4,7 +4,7 @@ import Card from "./Card";
 import Loader from "../shared/Loader/Loader";
 import { useSearchParams } from "react-router-dom";
 import Heading from "../Heading/Heading";
-import { getAllRoom } from "../../api/rooms";
+import axios from "axios";
 
 const Rooms = () => {
   const [rooms, setRooms] = useState([]);
@@ -14,15 +14,16 @@ const Rooms = () => {
 
   useEffect(() => {
     setLoading(true);
-    getAllRoom()
+    axios
+      .get("http://localhost:5000/api/v1/rooms")
       .then((data) => {
         if (category) {
-          const filterData = data.data.rooms.filter(
+          const filterData = data.data.data.rooms.filter(
             (room) => room.category === category
           );
           setRooms(filterData);
         } else {
-          setRooms(data.data.rooms);
+          setRooms(data.data.data.rooms);
         }
         setLoading(false);
       })
@@ -43,7 +44,7 @@ const Rooms = () => {
           ))}
         </div>
       ) : (
-        <div className="pt-12">
+        <div className="min-h-[calc(100vh-264.8px)] flex items-center justify-center">
           <Heading
             title="No Rooms Available In This Category"
             subtitle="Please Select Others Categories"
