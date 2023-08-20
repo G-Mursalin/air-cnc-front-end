@@ -28,7 +28,6 @@ const MyBookings = () => {
         return data.data.data.bookings;
       } catch (error) {
         const { data } = error.response;
-        console.log(data);
         if (data.status === "fail") {
           toast.error(data.message);
           setError({ errorMessage: data.message });

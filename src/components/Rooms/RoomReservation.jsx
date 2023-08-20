@@ -117,7 +117,6 @@ const RoomReservation = ({ roomData }) => {
       </div>
       <BookingModal
         bookingInfo={bookingInfo}
-        modalHandler={modalHandler}
         closeModal={closeModal}
         isOpen={isOpen}
       />

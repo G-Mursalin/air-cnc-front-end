@@ -49,7 +49,6 @@ const SignUp = () => {
                     email: result.user.email,
                   })
                   .then((data) => {
-                    console.log(data.data.accessToken);
                     localStorage.setItem("access-token", data.data.accessToken);
                   })
                   .catch((err) => {
