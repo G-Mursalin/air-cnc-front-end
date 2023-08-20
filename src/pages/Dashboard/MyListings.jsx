@@ -7,12 +7,15 @@ import NoDataFound from "../../components/shared/NavBar/NoDataFound";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { useQuery } from "@tanstack/react-query";
 import Loader from "../../components/shared/Loader/Loader";
+import UpdateRoomModal from "../../components/Modal/UpdateRoomModal";
 
 const MyListings = () => {
   const { user } = useContext(AuthContext);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedData, setSelectedData] = useState(null);
+  const [selectedDeleteData, setSelectedDeleteData] = useState(null);
+  const [selectedUpdateData, setSelectedUpdateData] = useState(null);
   const [axiosSecure] = useAxiosSecure();
 
   const {
@@ -49,10 +52,12 @@ const MyListings = () => {
 
   if (isLoading) return <Loader />;
 
+  // *****************************************************DELETE
+  // Delete Handler
   const deleteModalHandler = () => {
     // Delete Room
     axiosSecure
-      .delete(`/rooms/${selectedData._id}`)
+      .delete(`/rooms/${selectedDeleteData._id}`)
       .then((data) => {
         toast.success(data.data.message);
         refetch();
@@ -69,18 +74,55 @@ const MyListings = () => {
         }
       });
 
-    // Closed The Model
-    closeModal();
+    // Closed The Delete Model
+    closeDeleteModal();
   };
 
-  // Closed The Modal
-  const closeModal = () => {
-    setIsOpen(false);
+  // Closed The Delete Model
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
   };
 
-  // Open Modal
-  const openModal = () => {
-    setIsOpen(true);
+  // Open Delete Modal
+  const openDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  // *****************************************************UPDATE
+
+  // Update Handler
+  const updateModalHandler = (e) => {
+    e.preventDefault();
+    //Update Room Data to Database
+    axiosSecure
+      .patch(`/rooms/${selectedUpdateData._id}`, { data: selectedUpdateData })
+      .then((data) => {
+        toast.success(data.data.message);
+        refetch();
+      })
+      .catch((err) => {
+        // Catch Errors for Delete Room
+        const errorData = err?.response?.data;
+        if (errorData?.status === "fail") {
+          toast.error(errorData.message);
+        } else if (errorData?.status === "error") {
+          toast.error(errorData.message);
+        } else {
+          toast.error(err.message);
+        }
+      });
+    // Closed The Update Model
+    closeUpdateModal();
+  };
+
+  // Closed The Delete Model
+  const closeUpdateModal = () => {
+    setIsUpdateModalOpen(false);
+  };
+
+  // Open Delete Modal
+  const openUpdateModal = () => {
+    setIsUpdateModalOpen(true);
   };
 
   // If Any Error Show It To UI
@@ -166,10 +208,12 @@ const MyListings = () => {
               <tbody>
                 {listings.map((room) => (
                   <RoomDataRow
-                    setSelectedData={setSelectedData}
-                    room={room}
                     key={room._id}
-                    openModal={openModal}
+                    setSelectedDeleteData={setSelectedDeleteData}
+                    openDeleteModal={openDeleteModal}
+                    setSelectedUpdateData={setSelectedUpdateData}
+                    openUpdateModal={openUpdateModal}
+                    room={room}
                   />
                 ))}
               </tbody>
@@ -177,12 +221,21 @@ const MyListings = () => {
           </div>
         </div>
       </div>
-      {selectedData && (
+      {selectedDeleteData && (
         <DeleteModal
           modalHandler={deleteModalHandler}
-          isOpen={isOpen}
-          closeModal={closeModal}
-          id={selectedData._id}
+          isOpen={isDeleteModalOpen}
+          closeModal={closeDeleteModal}
+          id={selectedDeleteData._id}
+        />
+      )}
+      {selectedUpdateData && (
+        <UpdateRoomModal
+          modalHandler={updateModalHandler}
+          isOpen={isUpdateModalOpen}
+          closeModal={closeUpdateModal}
+          roomInfo={selectedUpdateData}
+          setSelectedUpdateData={setSelectedUpdateData}
         />
       )}
     </div>

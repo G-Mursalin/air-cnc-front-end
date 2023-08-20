@@ -1,6 +1,12 @@
 import { format } from "date-fns";
 
-const RoomDataRow = ({ room, setSelectedData, openModal }) => {
+const RoomDataRow = ({
+  room,
+  setSelectedDeleteData,
+  openDeleteModal,
+  setSelectedUpdateData,
+  openUpdateModal,
+}) => {
   return (
     <tr>
       <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -49,8 +55,8 @@ const RoomDataRow = ({ room, setSelectedData, openModal }) => {
           ></span>
           <span
             onClick={() => {
-              setSelectedData(room);
-              openModal();
+              setSelectedDeleteData(room);
+              openDeleteModal();
             }}
             className="relative"
           >
@@ -66,8 +72,8 @@ const RoomDataRow = ({ room, setSelectedData, openModal }) => {
           ></span>
           <span
             onClick={() => {
-              setSelectedData(room);
-              openModal();
+              setSelectedUpdateData(room);
+              openUpdateModal();
             }}
             className="relative"
           >
